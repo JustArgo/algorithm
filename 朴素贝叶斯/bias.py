@@ -181,6 +181,8 @@ print(total_vect)
 print(total_prob)
 exit()
 
+#少一步 给定篇文档  如何对其进行分类
+
 				
 
 def countWord(filepath):
