@@ -97,11 +97,13 @@ def biKMeans(dataSet,k,distMeas=distEclud):
 		clusterAssment[nonzero(clusterAssment[:,0].A == bestCentToSplit)[0],:] = bestClustAss
 	return centList,clusterAssment
 
-#测试算法
-dataMat3 = loadDataSet('testSet2.txt')
-#print(dataMat3)
-centList,myNewAssments = biKMeans(mat(dataMat3),3)
-print(centList)
+#此处只是得到中心点
+def kmeans(fileName):
+	#测试算法
+	dataMat3 = loadDataSet(fileName) #testSet2.txt
+	#print(dataMat3)
+	centList,myNewAssments = biKMeans(mat(dataMat3),3)
+	print(centList)
 
  
 			

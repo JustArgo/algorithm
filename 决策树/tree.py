@@ -5,6 +5,22 @@
 	3 循环特征 按特征划分之后 计算熵  比较信息增益大的 代表 划分之后 排序更有序 先取特征好的 
 '''
 from math import log
+import treePlotter #引入决策树 辅助处理模块
+
+#从文件加载数据
+def loadDataSet(fileName):
+	fopen = open(fileName)
+	dataArr = []
+	labelSet = ['no surfacing','flippers']
+	for line in fopen.readlines():
+		list = []
+		textList = line.strip().split()
+		#labelSet.add(textList[len(textList)-1])
+		for text in textList:
+			list.append(text)
+		dataArr.append(list)
+	return dataArr,labelSet
+
 def calcShannonEnt(dataSet):
 	numEntries = len(dataSet)
 	labelCount = {}
@@ -26,7 +42,7 @@ def splitDataSet(dataSet,axis,value):
 		if featVec[axis] == value:
 			reducedFeatVec = featVec[:axis]
 			reducedFeatVec.extend(featVec[axis+1:])
-			retDataSet.2append(reducedFeatVec)
+			retDataSet.append(reducedFeatVec)
 	return retDataSet
 
 #选择最好的数据集划分方式
@@ -55,7 +71,7 @@ def majorityCnt(classList):
 	classCount = {}
 	for vote in classList:
 		if vote not in classCount.keys():
-		classCount[vote] = 0
+			classCount[vote] = 0
 	sortedClassCount = sorted(classCount.iteritems(),key=operator.itemgetter(1),reverse=True)
 	return sortedClassCount[0][0]
 	
@@ -79,7 +95,7 @@ def createTree(dataSet,labels):
 	
 #使用决策树的分类函数
 def classify(inputTree,featLabels,testVec):
-	firstStr = inputTree.keys()[0]
+	firstStr = list(inputTree.keys())[0]
 	secondDict = inputTree[firstStr]
 	featIndex = featLabels.index(firstStr)
 	for key in secondDict.keys():
@@ -90,9 +106,16 @@ def classify(inputTree,featLabels,testVec):
 				classLabel = secondDict[key]
 	return classLabel
 	
+
+def dtree(fileName):
+	myDat,labels = loadDataSet(fileName) #返回数据二维数组，数据的标签，直接用最后一列最为标签
+	myTree = treePlotter.retrieveTree(0)
+	print(classify(myTree,labels,[1,0]))
+	
+#def dtree(fileName):
 #实际分类代码
-myDat,labels = trees.createDataSet()
-myTree = treePlotter.retrieveTree(0)
-trees.classify(myTree,labels,[1,0])
-trees.classify(myTree,labels,[1,1])
+
+#myTree = treePlotter.retrieveTree(0)
+#trees.classify(myTree,labels,[1,0])
+#trees.classify(myTree,labels,[1,1])
 
