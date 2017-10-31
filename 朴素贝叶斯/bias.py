@@ -1,4 +1,4 @@
-'''
+﻿'''
 	本算法 用于学习 朴素贝叶斯
 	1 读取文本并得到dict数据
 	2 公式p(y.i/x) = p(x/y.i)*p(y.i)/p(x)
@@ -168,6 +168,7 @@ def calcTotalProb(vect):
 	for i in range(len(vect)):
 		total_prob.append(vect[i]/sum(vect[i]))
 	return total_prob
+'''
 eachFile("C:\\Users\\Administrator\\Desktop\\python\\20_newsgroups")
 bytes2str(total_words) #将 bytes 转换成 str
 noneVocaFilter(total_words)
@@ -180,7 +181,7 @@ total_prob = calcTotalProb(total_vect)
 print(total_vect)
 print(total_prob)
 exit()
-
+'''
 #少一步 给定篇文档  如何对其进行分类
 
 				
@@ -197,6 +198,7 @@ def countWord(filepath):
 					word_dict[word] = word_dict[word] + 1
 	return word_dict
 #
+'''
 all_word_dict = {}
 for category in categories:
 	word_dict = countWord(docPath+category)
@@ -204,6 +206,8 @@ for category in categories:
 	all_word_dict[category] = word_dict
 
 probability = {}
+'''
+
 
 '''
 	从20个中随机抽取一个文档 并计算 指定的10个单词的概率 分母 p(x) = p(the) * p(many) * p(to) ...
@@ -232,6 +236,7 @@ def calRandomDocProbability():
 	有20个分类 所以要计算p(y.1/x) - p(y.20/x)
 	p(y.1/x) = p() * p(y.1) / p('the','many')
 '''
+'''
 for category in categories:
 	total = 0
 	percent = 1.0
@@ -243,9 +248,69 @@ for category in categories:
 	px = calRandomDocProbability()
 	global probability
 	probability[category] = percent / px
-	
-print(probability)
+'''	
+#print(probability)
 
+
+#加载训练数据
+def loadTrainDataSet(trainFileName,separator='\t'):
+	fopen = open(trainFileName)
+	lineArr = []
+	labelArr = []
+	for line in fopen.readlines():
+		lineList = line.strip().split(separator)
+		featArr = []
+		for i in range(len(lineList)-1):
+			featArr.append(float(lineList[i]))
+		lineArr.append(featArr)
+		labelArr.append(lineList[len(lineList)-1])
+	return array(lineArr),labelArr
+
+def loadTestDataSet(testFileName,separator='\t'):
+	fopen = open(testFileName)
+	lineArr = []
+	for line in fopen.readlines():
+		lineList = line.strip().split(separator)
+		lineArr.append(map(float,lineList))
+	return array(lineArr)
+
+	
+#朴素贝叶斯 
+def bayes(trainFileName,testFileName,separator='\t'):
+	# 1 得到数据和分类
+	# 2 得到分类和特征的对应关系字典 {'calssify1':[32,1,33,0,4]}  代表calssify1分类的 第一个特征有32个  占比 32/32+1+33+0+4
+	# 3 按分类区分得到总概率字典，key为分类的名称，value为分类的概率， {'classify1':0.33,'calssify2':0.67}
+	# 4 计算每个分类的每个特征的概率 {'calssify1':[0.3,0.2,0.1,0.3,0.1],'calssify2':[0.0,0.1,0.2,0.3,0.4]}
+	# 5 输入一个新的数据，循环和每个分类的 特征list相乘并加起来，得到值，看哪个分类的值大，就是哪个分类
+	lineArr,labels = loadTrainDataSet(trainFileName,separator)
+	labelSet = set(labels)
+	clasDict = {}
+	clasProbabilityDict = {}
+	featProbabilityDict = {}
+	for clas in labelSet:
+		clasList = []
+		featProbList = []
+		for i in range(len(labels)):
+			if labels[i]==clas:
+				clasList.append(lineArr[i])
+		clasSum = sum(clasList,axis=0)
+		clasDict[clas] = clasSum
+		for featNum in clasSum:
+			featProbList.append(featNum/sum(clasSum))
+		featProbabilityDict[clas] = featProbList
+		clasProbabilityDict[clas] = len(clasList)/float(len(labels))
+	
+	print('clasProbabilityDict->',clasProbabilityDict)
+	print('clasDict->',clasDict)
+	print('featProbabilityDict->',featProbabilityDict)
+	testDataSet = loadTestDataSet(testFileName)
+	for line in testDataSet:
+		probDict = {}
+		for clas in labelSet:
+			probDict[clas] = sum(line * featProbabilityDict[clas])*clasProbabilityDict[clas]
+		probList = sorted(probDict.iteritems(),key=lambda p:p[1],reverse=True)
+		print(probList[0][0])
+		
 
 
 
