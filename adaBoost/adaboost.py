@@ -9,6 +9,7 @@ adaboost元算法(二值分类器)
 6 假设现在又一个样本 要进行分类，则传入样本，和第5步中的x个分类器，累加计算分类结果值，>0 则为 1类, <0 则为-1类
 '''
 from numpy import *
+import plot
 #加载 自定义数据
 def loadSimpleData():
 	dataMat = matrix([
@@ -26,6 +27,8 @@ def loadSimpleData():
 def stumpClassify(dataMatrix,dimen,threshVal,threshIneq):
 	retArray = ones((shape(dataMatrix)[0],1))
 	if threshIneq == 'lt':
+		#print(dataMatrix[:,dimen])
+		#print(type(dataMatrix[:,dimen]))
 		retArray[dataMatrix[:,dimen] <= threshVal] = -1.0
 	else:
 		retArray[dataMatrix[:,dimen] > threshVal] = -1.0
@@ -66,13 +69,13 @@ def adaBoostTrainDS(dataArr,classLabels,numIt=40):
 	m = shape(dataArr)[0]
 	D = mat(ones((m,1))/m)
 	aggClassEst = mat(zeros((m,1)))
-	for i in range(3):
+	for i in range(numIt):
 		#print(D)
 		bestStump,error,classEst = buildStump(dataArr,classLabels,D)
 		#print("D:",D.T)
-		print(error)
+		#print(error)
 		alpha = float(0.5*log((1.0-error)/max(error,1e-16)))
-		print(alpha)
+		#print(alpha)
 		bestStump['alpha'] = alpha
 		weakClassArr.append(bestStump)
 		#print("classEst: ",classEst.T)
@@ -85,7 +88,7 @@ def adaBoostTrainDS(dataArr,classLabels,numIt=40):
 		errorRate = aggErrors.sum()/m
 		#print("total error: ",errorRate,"\n")
 		if errorRate == 0.0:
-			print("i:",i)
+			#print("i:",i)
 			break
 	return weakClassArr
 	
@@ -100,8 +103,42 @@ def adaClassify(datToClass,classifierArr):
 		#print aggClassEst
 	return sign(aggClassEst)
 
+
+#加载训练数据
+def loadTrainDataSet(trainFileName,separator='\t'):
+	fopen = open(trainFileName)
+	lineArr = []
+	labelArr = []
+	for line in fopen.readlines():
+		lineList = line.strip().split(separator)
+		featArr = []
+		for i in range(len(lineList)-1):
+			featArr.append(float(lineList[i]))
+		lineArr.append(featArr)
+		labelArr.append(float(lineList[len(lineList)-1]))
+	return lineArr,labelArr
+
+#加载测试数据
+def loadTestDataSet(testFileName,separator='\t'):
+	fopen = open(testFileName)
+	lineArr = []
+	for line in fopen.readlines():
+		lineList = line.strip().split(separator)
+		lineArr.append(list(map(float,lineList)))
+	return lineArr	
+
+	
+#adaboost分类
+def adaBoost(trainFileName='trainSet.txt',testFileName='testSet.txt',separator='\t'):
+	dataArr,labelArr = loadTrainDataSet(trainFileName,separator)
+	#plot.plotPoint(mat(dataArr))
+	#print(dataArr)
+	classifierArr = adaBoostTrainDS(dataArr,labelArr,30)
+	testDataArr = loadTestDataSet(testFileName,separator)
+	return adaClassify(testDataArr,classifierArr)
+
 #开始进行算法的测试
-dataArr,labelArr = loadSimpleData()
-classifierArr = adaBoostTrainDS(dataArr,labelArr,30)
-classifyRet = adaClassify([[5,0],[0,0]],classifierArr)
-print(classifyRet)
+#dataArr,labelArr = loadSimpleData()
+#classifierArr = adaBoostTrainDS(dataArr,labelArr,30)
+#classifyRet = adaClassify([[5,0],[0,0]],classifierArr)
+#print(classifyRet)
