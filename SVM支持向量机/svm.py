@@ -70,16 +70,16 @@ def smoSimple(dataMatIn, classLabels, C, toler, maxIter):
 					L = max(0,alphas[j] + alphas[i] - C)
 					H = min(C, alphas[j] + alphas[i])
 				if L==H:
-					print("L==H")
+					#print("L==H")
 					continue
 				eta = 2.0 * dataMatrix[i,:] * dataMatrix[j,:].T - dataMatrix[i,:] * dataMatrix[i,:].T - dataMatrix[j,:] * dataMatrix[j,:].T
 				if eta >= 0:
-					print("eta>=0")
+					#print("eta>=0")
 					continue
 				alphas[j] -= labelMat[j]*(Ei-Ej)/eta
 				alphas[j] = clipAlpha(alphas[j],H,L)
 				if (abs(alphas[j]-alphaJold) < 0.00001):
-					print("j not moving enough")
+					#print("j not moving enough")
 					continue
 				alphas[i] += labelMat[j]*labelMat[i]*(alphaJold - alphas[j])
 				b1 = b - Ei - labelMat[i]*(alphas[i]-alphaIold) * dataMatrix[i,:]*dataMatrix[i,:].T - labelMat[j]*(alphas[j]-alphaJold)*dataMatrix[i,:]*dataMatrix[j,:].T
@@ -89,7 +89,7 @@ def smoSimple(dataMatIn, classLabels, C, toler, maxIter):
 				else:
 					b = (b1 + b2)/2.0
 				alphaPairsChanged += 1
-				print("iter: %d i:%d, pairs changed %d" % (iter,i,alphaPairsChanged))
+				#print("iter: %d i:%d, pairs changed %d" % (iter,i,alphaPairsChanged))
 		if (alphaPairsChanged == 0):
 			iter += 1
 		else:
@@ -125,14 +125,34 @@ def loadTestDataSet(testFileName,separator='\t'):
 		
 	return dataMat	
 
+#计算ws 超平面	
+def calcWs(alphas,dataArr,classLabels):
+	X = mat(dataArr)
+	labelMat = mat(classLabels).transpose()
+	m,n = shape(X)
+	w = zeros((n,1))
+	for i in range(m):
+		w += multiply(alphas[i]*labelMat[i],X[i,:].T)
+	return w
+
+#计算分类值
+def classify(testDataArr,w,b):
+	valList = []
+	for val in testDataArr:
+		valList.append(val * mat(w)+b)
+	return valList
+	
+
 #svm算法
 def svm(trainFileName='trainSet.txt',testFileName='testSet.txt',separator='\t'):
 	dataArr,labelArr = loadTrainDataSet(trainFileName,separator)
 	b,alphas = smoSimple(dataArr,labelArr,0.6,0.001,40)
-	for i in range(100):
-		if alphas[i]>0.0:
-			print(dataArr[i],labelArr[i])
-	
+	#for i in range(100):
+	#	if alphas[i]>0.0:
+	#		print(dataArr[i],labelArr[i])
+	testDataArr = loadTestDataSet(testFileName)
+	w = calcWs(alphas,testDataArr,labelArr)
+	return classify(testDataArr,w,b),w,b
 	
 #dataArr,labelArr = loadDataSet("testSet.txt")
 #print(shape(labelArr))

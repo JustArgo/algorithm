@@ -82,6 +82,18 @@ def gradAscent(dataMatIn, classLabels):
 #weights = gradAscent(dataArr,labelMat)
 #print(weights)
 
+#归一化数值 传list 进来
+def autoNorm(dataSet):
+	dataSet = array(dataSet)
+	minVals = dataSet.min(0)
+	maxVals = dataSet.max(0)
+	ranges = maxVals-minVals
+	normDataSet = zeros(shape(dataSet))
+	m = dataSet.shape[0]
+	normDataSet = dataSet-tile(minVals,(m,1))
+	normDataSet = normDataSet/tile(ranges,(m,1))
+	return normDataSet.tolist()
+
 #画出数据集 和 logistic 回归的最佳拟合直线的函数
 def plotBestFit(wei):
 	import matplotlib.pyplot as plt
@@ -195,11 +207,12 @@ def writeToFile(fileName,testDataArr,weights):
 trainFileName = "pfm_train.csv";
 testFileName = "pfm_test.csv";
 dataArr,labelMat = dealDataSet(trainFileName,',');
-
+#dataArr = autoNorm(dataArr)
 weights = stocGradAscent0(dataArr,labelMat);
 
 #验证得到的 回归系数矩阵
 testDataArr = loadTestSet(testFileName,',');
+#testDataArr = autoNorm(testDataArr)
 writeToFile('sample.csv',testDataArr,weights)
 
 #print(weights)
