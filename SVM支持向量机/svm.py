@@ -1,4 +1,4 @@
-'''
+﻿'''
 	svm支持向量机 求分类问题 二值分类问题
 	1 以二维点 说明  求超平面 即 直线 f(x) = W(T) * x + b 使得距离该直线最近的点 到 该直线的间隔最大
 	2  距离为 z(x) = w(T) * x + b / ||w||
@@ -41,6 +41,9 @@ def clipAlpha(aj,H,L):
 	return aj
 
 #简化版 smo算法
+# C代表 alpha的上限
+# toler 代表容错率
+# maxIter 代表最大迭代次数
 def smoSimple(dataMatIn, classLabels, C, toler, maxIter):
 	dataMatrix = mat(dataMatIn)
 	labelMat = mat(classLabels).transpose()
@@ -93,14 +96,49 @@ def smoSimple(dataMatIn, classLabels, C, toler, maxIter):
 			iter = 0
 		print("iteration number: %d" % iter)
 	return b,alphas
-	
-dataArr,labelArr = loadDataSet("testSet.txt")
-#print(shape(labelArr))
-b,alphas = smoSimple(dataArr,labelArr,0.6,0.001,40)
-print(b)
-print(alphas)
 
-for i in range(100):
-	if alphas[i]>0.0:
-		print(dataArr[i],labelArr[i])
+#加载训练数据
+def loadTrainDataSet(trainFileName,separator='\t'):
+	dataMat = []
+	labelMat = []
+	fr = open(trainFileName)
+	for line in fr.readlines():
+		lineArr = line.strip().split(separator)
+		lineList = [1.0]
+		for val in lineArr:
+			lineList.append(float(val))
+		labelMat.append(float(lineList.pop()))
+		dataMat.append(lineList)
+		
+	return dataMat,labelMat
+	
+#加载测试数据
+def loadTestDataSet(testFileName,separator='\t'):
+	dataMat = []
+	fr = open(testFileName)
+	for line in fr.readlines():
+		lineArr = line.strip().split(separator)
+		lineList = [1.0]
+		for val in lineArr:
+			lineList.append(float(val))
+		dataMat.append(lineList)
+		
+	return dataMat	
+
+#svm算法
+def svm(trainFileName='trainSet.txt',testFileName='testSet.txt',separator='\t'):
+	dataArr,labelArr = loadTrainDataSet(trainFileName,separator)
+	b,alphas = smoSimple(dataArr,labelArr,0.6,0.001,40)
+	for i in range(100):
+		if alphas[i]>0.0:
+			print(dataArr[i],labelArr[i])
+	
+	
+#dataArr,labelArr = loadDataSet("testSet.txt")
+#print(shape(labelArr))
+#b,alphas = smoSimple(dataArr,labelArr,0.6,0.001,40)
+
+#for i in range(100):
+#	if alphas[i]>0.0:
+#		print(dataArr[i],labelArr[i])
 		

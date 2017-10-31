@@ -143,7 +143,7 @@ def uniform(yList):
 def logis1(trainFileName='trainSet.txt',testFileName='testSet.txt',separator='\t'):
 	dataArr,labelMat = loadTrainDataSet(trainFileName,separator)
 	weights = stocGradAscent0(dataArr,labelMat)
-	testDataArr = loadTestDataSet(testFileName)
+	testDataArr = loadTestDataSet(testFileName,separator)
 	return uniform(sigmoid(sum(testDataArr*weights,axis=1)))
 	
 	
@@ -152,7 +152,7 @@ def logis1(trainFileName='trainSet.txt',testFileName='testSet.txt',separator='\t
 def logis2(trainFileName='trainSet.txt',testFileName='testSet.txt',numIter=150,separator='\t'):
 	dataArr,labelMat = loadTrainDataSet(trainFileName,separator)
 	weights = stocGradAscent1(dataArr,labelMat,numIter)
-	testDataArr = loadTestDataSet(testFileName)
+	testDataArr = loadTestDataSet(testFileName,separator)
 	return uniform(sigmoid(sum(testDataArr*weights,axis=1)))
 	
 	

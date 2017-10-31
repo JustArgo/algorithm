@@ -303,7 +303,7 @@ def bayes(trainFileName,testFileName,separator='\t'):
 	print('clasProbabilityDict->',clasProbabilityDict)
 	print('clasDict->',clasDict)
 	print('featProbabilityDict->',featProbabilityDict)
-	testDataSet = loadTestDataSet(testFileName)
+	testDataSet = loadTestDataSet(testFileName,separator)
 	for line in testDataSet:
 		probDict = {}
 		for clas in labelSet:
