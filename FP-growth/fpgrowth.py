@@ -1,4 +1,4 @@
-'''
+﻿'''
 	fpgrowth算法
 	1 对数据进行第一次扫描 得到 每个项的数目
 	2 第二次扫描并建立 fp树
@@ -85,13 +85,7 @@ def createInitSet(dataSet):
 		retDict[frozenset(trans)] = 1
 	return retDict
 	
-simpDat = loadSimpDat()
-initSet = createInitSet(simpDat)
 
-myFpTree,myHeaderTable = createTree(initSet,3)
-print('myFpTree:',myFpTree)
-print('myHeaderTable:',myHeaderTable)
-myFpTree.disp()
 
 def ascendTree(leafNode,prefixPath):
 	if leafNode.parent != None:
@@ -123,9 +117,25 @@ def mineTree(inTree, headerTable, minSup, preFix, freqItemList):
 		if myHead != None:
 			mineTree(myCondTree, myHead, minSup, newFreqSet, freqItemList)
 			
-freqItems = []
-mineTree(myFpTree, myHeaderTable, 3, set([]), freqItems)			
-print(freqItems)
+#从文件中加载数据
+def loadDataSet(fileName):
+	fopen = open(fileName)
+	dataArr = []
+	for line in fopen.readlines():
+		dataArr.append(line.strip().split(','))
+	return dataArr
+
+#构建fp树，最小支持度默认为3
+def fp(fileName='testSet.txt',minSupport=3):
+	simpDat = loadDataSet(fileName)
+	initSet = createInitSet(simpDat)
+
+	myFpTree,myHeaderTable = createTree(initSet,minSupport)
+	myFpTree.disp()
+	
+	freqItems = []
+	mineTree(myFpTree, myHeaderTable, minSupport, set([]), freqItems)			
+	return myFpTree,freqItems
 
 	
 

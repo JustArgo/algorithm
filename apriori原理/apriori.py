@@ -1,4 +1,4 @@
-'''	
+﻿'''	
 	算法原理(用于寻找频繁项集)
 	1 生成候选项集
 '''
@@ -20,6 +20,9 @@ def createC1(dataSet):
 #扫码所有项目，计算每个项的值，过滤项目中数目<最小支持度的数据
 # 先计数 再过滤
 # D是一个 集合 ([1,3,4],[2,3,5],[1,2,3,5],[2,5])
+# 返回
+#	retList 是过滤之后的项 的 key  例如上面以0.5过滤  则剩下 1 2 3 5      4的支持度只有 0.25
+#	supportData 是 1 2 3 4 5 每个项的支持度
 def scanD(D,Ck,minSupport):
 	ssCnt = {}
 	for tid in D:
@@ -39,15 +42,7 @@ def scanD(D,Ck,minSupport):
 		supportData[key] = support
 	return retList,supportData
 	
-#执行算法
-dataSet = loadDataSet()
-C1 = createC1(dataSet)
-#print(C1)
-D = list(map(set,dataSet))
-L1,suppData0 = scanD(D,C1,0.5)
-#print(L1)
-#print("-------------")
-#print(suppData0)
+
 
 #aprioriGen  根据Lk集合 以及k 生成 新的集合
 #传  1 2 3 5  则返回  12 13 15 23 25 35
@@ -94,8 +89,7 @@ def apriori(dataSet,minSupport=0.5):
 		k += 1
 	return L,supportData
 
-L,supportData = apriori(dataSet,0.5)
-print('L:',L)
+
 	
 #挖掘关联规则 输入的L  是  [ [{1} {2} {3} {5}] [{2,5} {3,5}] [{2,3,5}] ] 这样的集合 i=1的时候  每个元素的 规则系数 都为1
 def generateRules(L,supportData,minConf=0.7):
@@ -132,9 +126,39 @@ def rulesFromConseq(freqSet, H, supportData, brl, minConf=0.5):
 		print('Hmp1:',Hmp1)
 		if len(Hmp1) > 1:
 			rulesFromConseq(freqSet, Hmp1, supportData, brl, minConf)
-			
-rules = generateRules(L,supportData,0.5)
-print('-----------------------------\n\n')
-print(rules)
+
+#加载训练数据
+def loadTrainDataSet(trainFileName,separator='\t'):
+	fopen = open(trainFileName)
+	lineArr = []
+	for line in fopen.readlines():
+		lineArr.append(line.strip().split(separator))
+	return lineArr
+
+#加载测试数据
+def loadTestDataSet(testFileName,separator='\t'):
+	fopen = open(testFileName)
+	lineArr = []
+	for line in fopen.readlines():
+		lineList = line.strip().split(separator)
+		lineArr.append(map(float,lineList))
+	return array(lineArr)
+	
+def apr(trainFileName='trainSet.txt'):
+	#执行算法
+	dataSet = loadTrainDataSet(trainFileName,',')
+	C1 = createC1(dataSet)
+	D = list(map(set,dataSet))
+	
+	#0.5 最小支持度 代表所占的比例 现实数据中 主要看中业务需求 
+	#L1,suppData0 = scanD(D,C1,0.5)
+	
+	#L是什么   supportData是什么
+	L,supportData = apriori(dataSet,0.5)
+	print('L:',L)
+	
+	rules = generateRules(L,supportData,0.5)
+	print('-----------------------------\n\n')
+	print(rules)
 
 
