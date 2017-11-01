@@ -23,7 +23,7 @@ def loadDataSet(fileName):
 
 def calcShannonEnt(dataSet):
 	numEntries = len(dataSet)
-	labelCount = {}
+	labelCounts = {}
 	for featVec in dataSet:
 		currentLabel = featVec[-1]
 		if currentLabel not in labelCounts.keys():
@@ -53,9 +53,9 @@ def chooseBestFeatureToSplit(dataSet):
 	bestFeature = -1
 	for i in range(numFeatures):
 		featList = [example[i] for example in dataSet]
-		uniqueVals = set[featList]
+		uniqueVals = set(featList)
 		newEntropy = 0.0
-		for value in uniqueValue:
+		for value in uniqueVals:
 			subDataSet = splitDataSet(dataSet, i, value)
 			prob = len(subDataSet)/float(len(dataSet))
 			newEntropy += prob * calcShannonEnt(subDataSet)
@@ -90,7 +90,7 @@ def createTree(dataSet,labels):
 	uniqueVals = set(featValues)
 	for value in uniqueVals:
 		subLabels = labels[:]
-		myTree[bestFeatLabel][value] = creatTree(splitDataSet(dataSet,bestFeat,value),subLabels)
+		myTree[bestFeatLabel][value] = createTree(splitDataSet(dataSet,bestFeat,value),subLabels)
 	return myTree
 	
 #使用决策树的分类函数
