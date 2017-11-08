@@ -25,7 +25,7 @@ def loadDataSet(fileName):
 	fr = open(fileName)
 	for line in fr.readlines():
 		curLine = line.strip().split('\t')
-		fltLine = list(map(float,curLine))
+		fltLine = map(float,curLine)
 		dataMat.append(fltLine)
 	return dataMat
 	
@@ -49,22 +49,14 @@ def regErr(dataSet):
 	
 #创建树的算法
 def createTree(dataSet,leafType=regLeaf,errType=regErr,ops=(1,4)):
-	global depth
-	#print('depth:',depth)
-	depth += 1
 	feat,val = chooseBestSplit(dataSet,leafType,errType,ops)
-	#print(feat,val)
 	if feat == None:
 		return val
 	retTree = {}
 	retTree['spInd'] = feat
 	retTree['spVal'] = val
 	lSet,rSet = binSplitDataSet(dataSet,feat,val)
-	#print(len(lSet),len(rSet))
-	global count
-	count += 1
 	retTree['left'] = createTree(lSet,leafType,errType,ops)
-	#print('after left')
 	retTree['right'] = createTree(rSet,leafType,errType,ops)
 	return retTree
 	
@@ -260,17 +252,15 @@ def loadTestDataSet(testFileName,separator='\t'):
 		dataMat.append(fltLine)
 	return dataMat
 
-#树回归
+#树回归 ops代表 
 def regress1(trainFileName='trainSet.txt',testFileName='testSet.txt',separator='\t',ops=(1,3)):
 	#对回归树 和 模型树进行比较
 	trainMat = mat(loadDataSet(trainFileName))
-	print(trainMat)
 	testMat = mat(loadDataSet(testFileName))
-	print(testMat)
 	myTree = createTree(trainMat, ops=ops)
-	print(myTree)
-	yHat = createForeCast(myTree,testMat[:,0:2])
-	return yHat#,corrcoef(yHat,testMat[:,1],rowvar=0)[0,1]
+	#print(myTree)
+	yHat = createForeCast(myTree,testMat[:,0])
+	return yHat,corrcoef(yHat,testMat[:,1],rowvar=0)[0,1]
 	
 def regress2(trainFileName='trainSet.txt',testFileName='testSet.txt',separator='\t',ops=(1,3)):
 	#对回归树 和 模型树进行比较
@@ -278,7 +268,7 @@ def regress2(trainFileName='trainSet.txt',testFileName='testSet.txt',separator='
 	testMat = mat(loadDataSet(testFileName))
 	myTree = createTree(trainMat, modelLeaf, modelErr, ops=ops)
 	#print(myTree)
-	yHat = createForeCast(myTree,testMat[:,0:2],modelTreeEval)
+	yHat = createForeCast(myTree,testMat[:,0],modelTreeEval)
 	return yHat,corrcoef(yHat,testMat[:,1],rowvar=0)[0,1]
 	
 

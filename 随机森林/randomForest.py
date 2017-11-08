@@ -182,13 +182,9 @@ def randomForest(trainFileName='trainSet.txt',testFileName='testSet.txt',separat
 		for featIndex in featIndexList:
 			subLabel.append(labels[featIndex])
 		#生成树
-		#print(subData,subLabel)
-		#exit()
-		#print(subLabel)
 		labelList.append(subLabel[:])
 		#这一步创建完树之后，subLabel就没有了
 		tree = createTree(subData,subLabel)
-		#print(subLabel)
 		treeList.append(tree)
 		
 	
@@ -197,17 +193,12 @@ def randomForest(trainFileName='trainSet.txt',testFileName='testSet.txt',separat
 	for testVector in testDataArr:
 		clasDict = {}
 		for i in range(len(treeList)):
-			#print(testVector)
-			#print(classify(treeList[i],labelList[i],testVector))
 			if type(treeList[i]).__name__!='dict':
 				continue
 			clasVal = classify(treeList[i],labelList[i],testVector)
-			#print(clasVal)
 			if clasVal in clasDict.keys():
 				clasDict[clasVal] += 1
 			else:
 				clasDict[clasVal] = 1
-		#print(clasDict)
-		testLabelList.append(sorted(clasDict.iteritems(),key=lambda p:p[1],reverse=True)[0][0])
-		#testLabelList.append(clasDict)
+		testLabelList.append(sorted(clasDict.items(),key=lambda p:p[1],reverse=True)[0][0])
 	return testLabelList
