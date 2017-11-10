@@ -11,8 +11,14 @@
 	9 求 上式的极大 转为 求alpha的极大
 	10 为什么 i 和 j能对偶
 	
+	*
+		C的含义是什么
+		
+		
+	
 '''
 from numpy import *
+import plot
 #加载数据
 def loadDataSet(fileName):
 	dataMat = []
@@ -54,9 +60,13 @@ def smoSimple(dataMatIn, classLabels, C, toler, maxIter):
 	iter = 0
 	while (iter<maxIter):
 		alphaPairsChanged = 0
+		
 		for i in range(m):
+			#fXi代表估算值     
 			fXi = float(multiply(alphas,labelMat).T*dataMatrix * dataMatrix[i,:].T) + b
+			#Ei 代表错误差值
 			Ei = fXi - float(labelMat[i])
+			#差值必须在一定程度以上 才有必要进行下一轮迭代
 			if ((labelMat[i]*Ei < -toler) and (alphas[i] < C)) or ((labelMat[i]*Ei > toler) and (alphas[i]>0)):
 				j = selectJrand(i,m)
 				fXj = float(multiply(alphas,labelMat).T * (dataMatrix * dataMatrix[j,:].T)) + b
@@ -72,6 +82,7 @@ def smoSimple(dataMatIn, classLabels, C, toler, maxIter):
 				if L==H:
 					#print("L==H")
 					continue
+				#为什么eta 必须 < 0
 				eta = 2.0 * dataMatrix[i,:] * dataMatrix[j,:].T - dataMatrix[i,:] * dataMatrix[i,:].T - dataMatrix[j,:] * dataMatrix[j,:].T
 				if eta >= 0:
 					#print("eta>=0")
@@ -86,15 +97,18 @@ def smoSimple(dataMatIn, classLabels, C, toler, maxIter):
 				b2 = b - Ej - labelMat[i]*(alphas[i]-alphaIold) * dataMatrix[i,:]*dataMatrix[j,:].T - labelMat[j]*(alphas[j]-alphaJold)*dataMatrix[j,:]*dataMatrix[j,:].T
 				if (0 < alphas[i] and C > alphas[i]):
 					b = b1
+				elif (0 < alphas[j] and C > alphas[j]):
+					b = b2
 				else:
 					b = (b1 + b2)/2.0
 				alphaPairsChanged += 1
-				#print("iter: %d i:%d, pairs changed %d" % (iter,i,alphaPairsChanged))
+				#print("%d, %d, %d" % (iter,i,alphaPairsChanged))
+		#iter += 1
 		if (alphaPairsChanged == 0):
 			iter += 1
 		else:
 			iter = 0
-		print("iteration number: %d" % iter)
+		#print("iteration number: %d" % iter)
 	return b,alphas
 
 #加载训练数据
@@ -146,13 +160,26 @@ def classify(testDataArr,w,b):
 #svm算法
 def svm(trainFileName='trainSet.txt',testFileName='testSet.txt',separator='\t'):
 	dataArr,labelArr = loadTrainDataSet(trainFileName,separator)
-	b,alphas = smoSimple(dataArr,labelArr,0.6,0.001,40)
+	
+	#exit()
+	#  alpha上限  0.6
+	#  误差值上限 0.001
+	#  最大迭代次数 40
+	b,alphas = smoSimple(dataArr,labelArr,1.5,0.001,40)
+	#for i in range(len(alphas)):
+	#	if alphas[i] != 0:
+	#		print('%d %f' % (i,alphas[i]))
+	w = calcWs(alphas,dataArr,labelArr)
+	#print(w,b)
+	
 	#for i in range(100):
 	#	if alphas[i]>0.0:
 	#		print(dataArr[i],labelArr[i])
 	testDataArr = loadTestDataSet(testFileName)
-	w = calcWs(alphas,testDataArr,labelArr)
-	return classify(testDataArr,w,b),w,b
+	#w = calcWs(alphas,testDataArr,labelArr)
+	w[0,0] += b
+	plot.plotPointAndLine(mat(dataArr)[:,1:],w)
+	#return classify(testDataArr,w,b),w,b
 	
 #dataArr,labelArr = loadDataSet("testSet.txt")
 #print(shape(labelArr))

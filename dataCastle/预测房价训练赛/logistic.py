@@ -1,22 +1,55 @@
-﻿'''
+'''
 	本算法用于解决二值分类问题
 	1 给定 n个特征向量 和 其对应的 分类 labels  假设特征为2个
 	2 找出回归系数 x0 x1 x2 由于此处特征为2个 所以找3个回归系数 x0类似于 直线的截点
 	3 由于是二值问题 所以 用 sigmoid 阶跃函数 来修正 回归系数
 '''
 from numpy import *
+import re
 logSigmoid = False
 #加载数据
-def loadDataSet():
+def loadDataSet(trainFileName):
 	dataMat = []
 	labelMat = []
-	fr = open('testSet2.txt')
+	fr = open(trainFileName)
 	for line in fr.readlines():
 		lineArr = line.strip().split()
 		dataMat.append([1.0,float(lineArr[0]),float(lineArr[1])])
 		labelMat.append([int(lineArr[2])])
 	return dataMat,labelMat
 
+#本方法针对那些不是 全部数值型的数据,并且有多个特征的 此处外加对dataCastle的特殊处理
+def dealDataSet(trainFileName,separator):
+	matcher = re.compile(r'^[-+]?[0-9]+\.?[0-9]*$')
+	dataMat = []
+	labelMat = []
+	fr = open(trainFileName)
+	for line in fr.readlines():
+		lineArr = line.strip().split(separator)
+		list = []
+		list.append(1.0)
+		for i in range(len(lineArr)):
+			if i!=1:
+				list.append(lineArr[i])
+			else:
+				labelMat.append([int(lineArr[1])])
+		dataMat.append(list)
+	for j in range(len(dataMat[0])):
+		if matcher.match(str(dataMat[0][j]))==None:
+			colDict = {}
+			value = 1
+			for i in range(len(dataMat)):
+				if dataMat[i][j] not in colDict:
+					colDict[dataMat[i][j]] = value
+					value += 1
+			for i in range(len(dataMat)):
+				if dataMat[i][j] in colDict:
+					dataMat[i][j] = colDict[dataMat[i][j]]
+	for i in range(len(dataMat)):
+		for j in range(len(dataMat[i])):
+			dataMat[i][j] = float(dataMat[i][j])
+	return dataMat,labelMat
+	
 #sigmoid 阶跃函数	
 def sigmoid(inX):
 	if logSigmoid == True:
@@ -48,6 +81,18 @@ def gradAscent(dataMatIn, classLabels):
 #dataArr,labelMat = loadDataSet()
 #weights = gradAscent(dataArr,labelMat)
 #print(weights)
+
+#归一化数值 传list 进来
+def autoNorm(dataSet):
+	dataSet = array(dataSet)
+	minVals = dataSet.min(0)
+	maxVals = dataSet.max(0)
+	ranges = maxVals-minVals
+	normDataSet = zeros(shape(dataSet))
+	m = dataSet.shape[0]
+	normDataSet = dataSet-tile(minVals,(m,1))
+	normDataSet = normDataSet/tile(ranges,(m,1))
+	return normDataSet.tolist()
 
 #画出数据集 和 logistic 回归的最佳拟合直线的函数
 def plotBestFit(wei):
@@ -105,64 +150,71 @@ def stocGradAscent1(dataMatrix, classLabels, numIter=150):
 			weights = weights + alpha * error * dataMatrix[randIndex]
 			del(dataIndex[randIndex])
 	return weights
-		
-#加载训练数据
-def loadTrainDataSet(trainFileName,separator='\t'):
-	dataMat = []
-	labelMat = []
-	fr = open(trainFileName)
-	for line in fr.readlines():
-		lineArr = line.strip().split(separator)
-		lineList = [1.0]
-		for val in lineArr:
-			lineList.append(float(val))
-		labelMat.append([int(lineList.pop())])
-		dataMat.append(lineList)
-		
-	return dataMat,labelMat
-	
-#加载测试数据
-def loadTestDataSet(testFileName,separator='\t'):
+
+#加载测试集数据
+def loadTestSet(testFileName,separator):
+	matcher = re.compile(r'^[-+]?[0-9]+\.?[0-9]*$')
 	dataMat = []
 	fr = open(testFileName)
 	for line in fr.readlines():
 		lineArr = line.strip().split(separator)
-		lineList = [1.0]
-		for val in lineArr:
-			lineList.append(float(val))
-		dataMat.append(lineList)
-		
+		list = []
+		list.append(1.0)
+		for i in range(len(lineArr)):
+			list.append(lineArr[i])
+		dataMat.append(list)
+	for j in range(len(dataMat[0])):
+		if matcher.match(str(dataMat[0][j]))==None:
+			colDict = {}
+			value = 1
+			for i in range(len(dataMat)):
+				if dataMat[i][j] not in colDict:
+					colDict[dataMat[i][j]] = value
+					value += 1
+			for i in range(len(dataMat)):
+				if dataMat[i][j] in colDict:
+					dataMat[i][j] = colDict[dataMat[i][j]]
+	for i in range(len(dataMat)):
+		for j in range(len(dataMat[i])):
+			dataMat[i][j] = float(dataMat[i][j])
 	return dataMat
-			
-#归一化计算
-def uniform(yList):
-	f = lambda x:1 if x>0.5 else 0
-	return map(f,yList)
+
+#检验权重
+def testWeights(testDataArr,testLabelMat,weights):
+	estimateMat = testDataArr*weights;
+	correctCount = 0
+	for i in range(len(testLabelMat)):
+		if testLabelMat[i,0]==estimateMat[i]:
+			correctCount += 1
+	return correctCount/len(testLabelMat)
 	
-#logistics回归 采用普通的随机梯度上升算法
-def logis1(trainFileName='trainSet.txt',testFileName='testSet.txt',separator='\t'):
-	dataArr,labelMat = loadTrainDataSet(trainFileName,separator)
-	weights = stocGradAscent0(dataArr,labelMat)
-	testDataArr = loadTestDataSet(testFileName,separator)
-	return uniform(sigmoid(sum(testDataArr*weights,axis=1)))
+
+#验证分类是否正确
+def classifyVector(inX, weights):
+	prob = sigmoid(sum(inX*weights))
+	if prob > 0.5:
+		return 1.0
+	else:
+		return 0.0
 	
+#将结果写到文件中
+def writeToFile(fileName,testDataArr,weights):
+	output = open(fileName, 'w')
+	for i in range(len(testDataArr)):
+		output.write(str(int(classifyVector(testDataArr[i],weights)))+'\n')
+	output.close()
 	
-	
-#logistics回归 采用改进的随机梯度上升算法
-def logis2(trainFileName='trainSet.txt',testFileName='testSet.txt',numIter=150,separator='\t'):
-	dataArr,labelMat = loadTrainDataSet(trainFileName,separator)
-	weights = stocGradAscent1(dataArr,labelMat,numIter)
-	testDataArr = loadTestDataSet(testFileName,separator)
-	return uniform(sigmoid(sum(testDataArr*weights,axis=1)))
-	
-def logisWithData(dataArr):
-	weights = stocGradAscent0(dataArr,labelMat)
-	testDataArr = loadTestDataSet(testFileName,separator)
-	return uniform(sigmoid(sum(testDataArr*weights,axis=1)))
-		
-	
-#dataArr,labelMat = loadDataSet()
-#weights = stocGradAscent0(dataArr,labelMat)
+trainFileName = "pfm_train.csv";
+testFileName = "pfm_test.csv";
+dataArr,labelMat = dealDataSet(trainFileName,',');
+#dataArr = autoNorm(dataArr)
+weights = stocGradAscent0(dataArr,labelMat);
+
+#验证得到的 回归系数矩阵
+testDataArr = loadTestSet(testFileName,',');
+#testDataArr = autoNorm(testDataArr)
+writeToFile('sample.csv',testDataArr,weights)
+
 #print(weights)
 #plotBestFit(weights)
 

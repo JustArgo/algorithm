@@ -34,7 +34,6 @@ def standRegress(xArr,yArr):
 def regress(dataArr,testArr):
 	m,n = shape(dataArr)
 	ws = standRegress(dataArr[0:n],dataArr[-1])
-	print(ws,shape(ws))
 	return ws*testArr
 		
 	
