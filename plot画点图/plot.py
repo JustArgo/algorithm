@@ -62,5 +62,5 @@ def plotRect(valArr,labelArr):
 	ax.set_title('Relation', bbox={'facecolor':'0.8', 'pad':5})
 	plt.grid(True)
 	plt.show()
-	plt.savefig("bar.jpg")
+	#plt.savefig("bar.jpg")
 	plt.close()
