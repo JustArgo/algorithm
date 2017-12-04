@@ -4,16 +4,16 @@
 import numpy as np
 from math import *
 def tanh(x):
-	return (np.exp(x)-np.exp(-x))/(np.exp(x)+np.exp(-x))
+	return np.tanh(x)
 	
 def tanh_deriv(x):
-	return 1-x*x
+	return 1.0 - np.tanh(x)*np.tanh(x)
 
 def logistic(x):
 	return 1/(1+(np.exp(-x)))
 	
 def logistic_deriv(x):
-	return x*(1-x)
+	return logistic(x)*(1-logistic(x))
 
 class neuralNetwork:
 	def __init__(self,layers,activation='tanh'):
@@ -32,42 +32,55 @@ class neuralNetwork:
 		for i in range(1,len(layers)-1):
 			self.weights.append((2*np.random.random((layers[i-1]+1,layers[i]+1))-1)*0.25)
 			self.weights.append((2*np.random.random((layers[i]+1,layers[i+1]))-1)*0.25)
-			
-	def fit(self,X,y,learning_rate=0.002,epochs=5):
+	
+	#参数说明  X是m行n列  y是m行1列
+	def fit(self,X,y,learning_rate=0.002,epochs=100):
 		
 		temp = np.ones((X.shape[0],X.shape[1]+1))
 		temp[:,0:-1] = X
 		X = temp	#temp的最后一列都是1，代表bias
-		#print(a)
+		y = np.array(y)
 		for i in range(epochs):
-			a = [X]
+			index = np.random.randint(X.shape[0])
+			a = [X[index]]
 			for j in range(len(self.weights)):#有两个权重就计算两次
 				#print(self.activation(np.dot(a[-1],self.weights[j])))
-				a.append(self.activation(np.dot(a[-1],self.weights[j])))
+				a.append(self.activation(np.dot(a[j],self.weights[j])))
 			
-			#print(a)
 			#计算偏差
-			err = y - a[-1]
-			deltas =  err * self.activation_deriv(a[-1])
+			# deltas 代表的是  round(E)/round(Net)
+			err = y[index] - a[-1]
+			deltas =  [err * self.activation_deriv(a[-1])]  
 			
-			#进行反向传播权重
-			#print(deltas.shape)
+			#计算隐藏层到输入层的deltas,进行反向传播权重
+			for j in range(len(self.layers)-2,0,-1):
+				deltas.append(deltas[-1].dot(self.weights[j].T) * self.activation_deriv(a[j]))  #计算要分清楚 数值类计算和矩阵类计算
 			
-			for j in range(len(self.layers)-1,0,-1):
-				#print(a[j-1].T.shape)
-				#print(deltas.shape)
-				self.weights[j-1] += learning_rate* np.dot(a[j-1].T,deltas)
+			deltas.reverse() #翻转偏导数
+			
+			#重新计算weights
+			for j in range(len(self.weights)):
+				layer = np.atleast_2d(a[j])  
+				delta = np.atleast_2d(deltas[j])
+				self.weights[j] += learning_rate* layer.T.dot(delta)			#计算要分清楚 数值类计算和矩阵类计算
 				
-			
+	def predict(self, x):         
+		x = np.array(x)         
+		temp = np.ones(x.shape[0]+1)         
+		temp[0:-1] = x         
+		a = temp         
+		for l in range(0, len(self.weights)):             
+			a = self.activation(np.dot(a, self.weights[l]))         
+		return a		
 	#大致 这个逻辑，具体为什么不懂，是因为没有清楚的数学逻辑思维
 	'''
 
 		1 假设有1个案例，输入层2层，隐藏层3层，输出层1层
 		2 可以确定的是self.weights
 			[
-				[ 0.21 , 0.13, 0.15, 0.09 
-				  0.11 , 0.15, 0.17, 0.10	
-				  0.17 , 0.25, 0.12, 0.20 ],    #3行4列
+				[ 0.21 , 0.13, 0.15 
+				  0.11 , 0.15, 0.17	
+				  0.17 , 0.25, 0.12 ],    #3行3列
 				  
 				[ 0.21 
 				  0.11 
@@ -135,10 +148,18 @@ def loadTrainDataSet(fileName='train.txt'):
 		dataMat.append(fltLine)
 		labelMat.append(float(curLine[-1]))
 	return dataMat,labelMat	
-	
+
+#矩阵类计算用 matrix
+#数值类计算用 array	
 def train():
 	dataMat,labelMat = loadTrainDataSet()	
 	nn = neuralNetwork([2,3,1])
-	nn.fit(np.mat(dataMat),np.mat(labelMat))
-	print(nn.weights)
+	nn.fit(np.mat(dataMat),np.mat(labelMat).T)
+	#print(nn.weights)
+	print(nn.predict([4,1]))
+	print(nn.predict([2,2]))
+	print(nn.predict([3,3]))
+	print(nn.predict([1,4]))
+	print(nn.predict([5,3]))
+	print(nn.predict([2,3]))
 		
