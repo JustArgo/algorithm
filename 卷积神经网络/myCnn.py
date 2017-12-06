@@ -28,14 +28,19 @@ class Ccnn:
 		self.yita = 0.01
 		self.cLyBias = rand_arr(-0.1, 0.1, 1,cLyNum)
 		self.fLyBias = rand_arr(-0.1, 0.1, 1,fLyNum)
+		#卷积核  5*5
 		self.kernel_c = zeros((gParam.C_SIZE,gParam.C_SIZE,cLyNum))
+		#全连接核 12*12
 		self.kernel_f = zeros((gParam.F_NUM,gParam.F_NUM,fLyNum))
 		for i in range(cLyNum):
 			self.kernel_c[:,:,i] = rand_arr(-0.1,0.1,gParam.C_SIZE,gParam.C_SIZE)
 		for i in range(fLyNum):
 			self.kernel_f[:,:,i] = rand_arr(-0.1,0.1,gParam.F_NUM,gParam.F_NUM)
+		#按2*2进行池化
 		self.pooling_a = ones((self.pSize,self.pSize))/(self.pSize**2)	
+		
 		self.weight_f = rand_arr(-0.1,0.1, pLyNum, fLyNum)
+		#100行*10列 全连接完成之后(1,100)和这个权重相乘 得到 (1,10)
 		self.weight_output = rand_arr(-0.1,0.1,fLyNum,oLyNum)
 	def read_pic_data(self, path, i):
 		#print 'read_pic_data'
@@ -79,6 +84,7 @@ class Ccnn:
 		state = zeros((r0,c0))
 		for i in range(c0):
 			for j in range(r0):
+				#采用2行2列的左上角 * pooling_a矩阵 然后相加得到池化结果
 				temp = multiply(data[p_r*i:p_r*i+1,p_c*j:p_c*j+1],pooling_a)
 				state[i][j] = temp.sum()
 		return state
@@ -90,17 +96,22 @@ class Ccnn:
 		#1：全连接层卷积前,只和weight_f1相加之后的矩阵
 		#2：和全连接层卷积完之后的矩阵		
 		n_p0, n_f = shape(weight_f1)#n_p0=20(是Feature Map的个数);n_f是100(全连接层神经元个数)
+		#12行 12列 20层
 		m_p, n_p, pCnt = shape(state_p1)#这个矩阵是三维的
+		#12行 12列 20层
 		m_k_f1, n_k_f1,fCnt = shape(kernel_f1)#12*12*100
+		#12行 12列 100层
 		state_f1_temp = zeros((m_p,n_p,n_f))
+		#1行 1列   20层
 		state_f1 = zeros((m_p - m_k_f1 + 1,n_p - n_k_f1 + 1,n_f))	
 		for n in range(n_f):
 			count = 0
-			for m in range(n_p0):
+			for m in range(n_p0):#循环20层
 				temp = state_p1[:,:,m] * weight_f1[m][n] 
 				count = count + temp
 			state_f1_temp[:,:,n] = count
 			state_f1[:,:,n] = self.convolution(state_f1_temp[:,:,n], kernel_f1[:,:,n])	
+		#两个返回分别是 1*1*100  12*12*100
 		return state_f1, state_f1_temp	
 	# softmax 层
 	def softmax_layer(self,state_f1):
