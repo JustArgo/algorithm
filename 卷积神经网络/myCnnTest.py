@@ -89,7 +89,7 @@ for i in test_num:
 	output = myCnn.softmax_layer(state_fo)	
 	#计算误差
 	y_pre = output.argmax(axis=1)
-	print '真实数字为%d',ylab, '预测数字是%d', y_pre
+	print('真实数字为%d',ylab, '预测数字是%d', y_pre)
 	
 
 

@@ -1,26 +1,28 @@
-#Áã¾ùÖµ»¯
+
+import numpy as np
+#é›¶å‡å€¼åŒ–
 def zeroMean(dataMat):      
-    meanVal=np.mean(dataMat,axis=0)     #°´ÁĞÇó¾ùÖµ£¬¼´Çó¸÷¸öÌØÕ÷µÄ¾ùÖµ
+    meanVal=np.mean(dataMat,axis=0)     #æŒ‰åˆ—æ±‚å‡å€¼ï¼Œå³æ±‚å„ä¸ªç‰¹å¾çš„å‡å€¼
     newData=dataMat-meanVal
     return newData,meanVal
 
-#µÚÒ»ÖÖpca£¬È¡Ç°ÃæµÄn¸öÌØÕ÷Öµ
+#ç¬¬ä¸€ç§pcaï¼Œå–å‰é¢çš„nä¸ªç‰¹å¾å€¼
 def pca(dataMat,n):
     newData,meanVal=zeroMean(dataMat)
-    covMat=np.cov(newData,rowvar=0)    #ÇóĞ­·½²î¾ØÕó,return ndarray£»Èôrowvar·Ç0£¬Ò»ÁĞ´ú±íÒ»¸öÑù±¾£¬Îª0£¬Ò»ĞĞ´ú±íÒ»¸öÑù±¾
+    covMat=np.cov(newData,rowvar=0)    #æ±‚åæ–¹å·®çŸ©é˜µ,return ndarrayï¼›è‹¥rowvaré0ï¼Œä¸€åˆ—ä»£è¡¨ä¸€ä¸ªæ ·æœ¬ï¼Œä¸º0ï¼Œä¸€è¡Œä»£è¡¨ä¸€ä¸ªæ ·æœ¬
     
-    eigVals,eigVects=np.linalg.eig(np.mat(covMat))#ÇóÌØÕ÷ÖµºÍÌØÕ÷ÏòÁ¿,ÌØÕ÷ÏòÁ¿ÊÇ°´ÁĞ·ÅµÄ£¬¼´Ò»ÁĞ´ú±íÒ»¸öÌØÕ÷ÏòÁ¿
-    eigValIndice=np.argsort(eigVals)            #¶ÔÌØÕ÷Öµ´ÓĞ¡µ½´óÅÅĞò
-    n_eigValIndice=eigValIndice[-1:-(n+1):-1]   #×î´óµÄn¸öÌØÕ÷ÖµµÄÏÂ±ê
-    n_eigVect=eigVects[:,n_eigValIndice]        #×î´óµÄn¸öÌØÕ÷Öµ¶ÔÓ¦µÄÌØÕ÷ÏòÁ¿
-    lowDDataMat=newData*n_eigVect               #µÍÎ¬ÌØÕ÷¿Õ¼äµÄÊı¾İ
-    reconMat=(lowDDataMat*n_eigVect.T)+meanVal  #ÖØ¹¹Êı¾İ
+    eigVals,eigVects=np.linalg.eig(np.mat(covMat))#æ±‚ç‰¹å¾å€¼å’Œç‰¹å¾å‘é‡,ç‰¹å¾å‘é‡æ˜¯æŒ‰åˆ—æ”¾çš„ï¼Œå³ä¸€åˆ—ä»£è¡¨ä¸€ä¸ªç‰¹å¾å‘é‡
+    eigValIndice=np.argsort(eigVals)            #å¯¹ç‰¹å¾å€¼ä»å°åˆ°å¤§æ’åº
+    n_eigValIndice=eigValIndice[-1:-(n+1):-1]   #æœ€å¤§çš„nä¸ªç‰¹å¾å€¼çš„ä¸‹æ ‡
+    n_eigVect=eigVects[:,n_eigValIndice]        #æœ€å¤§çš„nä¸ªç‰¹å¾å€¼å¯¹åº”çš„ç‰¹å¾å‘é‡
+    lowDDataMat=newData*n_eigVect               #ä½ç»´ç‰¹å¾ç©ºé—´çš„æ•°æ®
+    reconMat=(lowDDataMat*n_eigVect.T)+meanVal  #é‡æ„æ•°æ®
     return lowDDataMat,reconMat
 	
-#ÓÃÀ´¼ÆËã°Ù·Ö±ÈµÄ Çó³ök
+#ç”¨æ¥è®¡ç®—ç™¾åˆ†æ¯”çš„ æ±‚å‡ºk
 def percentage2n(eigVals,percentage):  
-    sortArray=np.sort(eigVals)   #ÉıĞò  
-    sortArray=sortArray[-1::-1]  #Äæ×ª£¬¼´½µĞò  
+    sortArray=np.sort(eigVals)   #å‡åº  
+    sortArray=sortArray[-1::-1]  #é€†è½¬ï¼Œå³é™åº  
     arraySum=sum(sortArray)  
     tmpSum=0  
     num=0  
@@ -30,16 +32,38 @@ def percentage2n(eigVals,percentage):
         if tmpSum>=arraySum*percentage:  
             return num 	
 		
-#µÚ¶şÖÖpca£¬È¡°Ù·Ö±ÈµÄ  k¸öÌØÕ÷
-def pca(dataMat,percentage=0.99):  
+#ç¬¬äºŒç§pcaï¼Œå–ç™¾åˆ†æ¯”çš„  kä¸ªç‰¹å¾
+def pca2(dataMat,percentage=0.99):  
     newData,meanVal=zeroMean(dataMat)  
-    covMat=np.cov(newData,rowvar=0)    #ÇóĞ­·½²î¾ØÕó,return ndarray£»Èôrowvar·Ç0£¬Ò»ÁĞ´ú±íÒ»¸öÑù±¾£¬Îª0£¬Ò»ĞĞ´ú±íÒ»¸öÑù±¾  
-    eigVals,eigVects=np.linalg.eig(np.mat(covMat))#ÇóÌØÕ÷ÖµºÍÌØÕ÷ÏòÁ¿,ÌØÕ÷ÏòÁ¿ÊÇ°´ÁĞ·ÅµÄ£¬¼´Ò»ÁĞ´ú±íÒ»¸öÌØÕ÷ÏòÁ¿  
-    n=percentage2n(eigVals,percentage)                 #Òª´ïµ½percentµÄ·½²î°Ù·Ö±È£¬ĞèÒªÇ°n¸öÌØÕ÷ÏòÁ¿  
-    eigValIndice=np.argsort(eigVals)            #¶ÔÌØÕ÷Öµ´ÓĞ¡µ½´óÅÅĞò  
-    n_eigValIndice=eigValIndice[-1:-(n+1):-1]   #×î´óµÄn¸öÌØÕ÷ÖµµÄÏÂ±ê  
-    n_eigVect=eigVects[:,n_eigValIndice]        #×î´óµÄn¸öÌØÕ÷Öµ¶ÔÓ¦µÄÌØÕ÷ÏòÁ¿  
-    lowDDataMat=newData*n_eigVect               #µÍÎ¬ÌØÕ÷¿Õ¼äµÄÊı¾İ  
-    reconMat=(lowDDataMat*n_eigVect.T)+meanVal  #ÖØ¹¹Êı¾İ  
+    covMat=np.cov(newData,rowvar=0)    #æ±‚åæ–¹å·®çŸ©é˜µ,return ndarrayï¼›è‹¥rowvaré0ï¼Œä¸€åˆ—ä»£è¡¨ä¸€ä¸ªæ ·æœ¬ï¼Œä¸º0ï¼Œä¸€è¡Œä»£è¡¨ä¸€ä¸ªæ ·æœ¬  
+    eigVals,eigVects=np.linalg.eig(np.mat(covMat))#æ±‚ç‰¹å¾å€¼å’Œç‰¹å¾å‘é‡,ç‰¹å¾å‘é‡æ˜¯æŒ‰åˆ—æ”¾çš„ï¼Œå³ä¸€åˆ—ä»£è¡¨ä¸€ä¸ªç‰¹å¾å‘é‡  
+    n=percentage2n(eigVals,percentage)                 #è¦è¾¾åˆ°percentçš„æ–¹å·®ç™¾åˆ†æ¯”ï¼Œéœ€è¦å‰nä¸ªç‰¹å¾å‘é‡  
+    eigValIndice=np.argsort(eigVals)            #å¯¹ç‰¹å¾å€¼ä»å°åˆ°å¤§æ’åº  
+    n_eigValIndice=eigValIndice[-1:-(n+1):-1]   #æœ€å¤§çš„nä¸ªç‰¹å¾å€¼çš„ä¸‹æ ‡  
+    n_eigVect=eigVects[:,n_eigValIndice]        #æœ€å¤§çš„nä¸ªç‰¹å¾å€¼å¯¹åº”çš„ç‰¹å¾å‘é‡  
+    lowDDataMat=newData*n_eigVect               #ä½ç»´ç‰¹å¾ç©ºé—´çš„æ•°æ®  
+    reconMat=(lowDDataMat*n_eigVect.T)+meanVal  #é‡æ„æ•°æ®  
     return lowDDataMat,reconMat
 	
+def loadTrainDataSet(fileName='train.txt'):
+	dataMat = []
+	labelMat = []
+	fr = open(fileName)
+	for line in fr.readlines():
+		curLine = line.strip().split("\t")
+		fltLine = []
+		for i in range(len(curLine)-1):
+			fltLine.append(float(curLine[i]))
+		
+		dataMat.append(fltLine)
+		labelMat.append(float(curLine[-1]))
+	return dataMat,labelMat	
+	
+def train():
+	dataMat,labelMat = loadTrainDataSet()
+	lowDDataMat,reconMat = pca(dataMat,1)
+	print(lowDDataMat)
+	print('----------')
+	print(reconMat)
+	
+train()
