@@ -123,8 +123,15 @@ class Ccnn:
 			output[:,i]=t0/t1
 		return output	
 	#误差反向传播更新权值
+	'''
+	 * 1 err_cost 误差
+	 * 2 y真实值
+	 * 3 训练数据
+	 * 4 
+	 
+	'''
 	def cnn_upweight(self,err_cost, ylab, train_data,state_c1, \
-					state_s1, state_f1, state_f1_temp, output):
+					state_p1, state_f1, state_f1_temp, output):
 		#print 'cnn_upweight'
 			m_data, n_data = shape(train_data)
 			# softmax的资料请查看 (TODO)
@@ -163,7 +170,7 @@ class Ccnn:
 				delta_layer_f1_temp[:,:,n] = delta_layer_f1[:,n] * self.kernel_f[:,:,n]
 			for n in range(self.pLyNum):
 				for m in range(self.fLyNum):
-					temp = delta_layer_f1_temp[:,:,m] * state_s1[:,:,n]
+					temp = delta_layer_f1_temp[:,:,m] * state_p1[:,:,n]
 					delta_weight_f1_temp[n,m] = temp.sum()
 			weight_f1_temp = weight_f1_temp - self.yita * delta_weight_f1_temp
 
