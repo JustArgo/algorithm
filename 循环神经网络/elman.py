@@ -4,19 +4,22 @@
 '''
 import numpy as np
 
+def sigmoid(x):
+	return 1.0/np.exp(-x)
+
 class elman:
 	#参数说明
 	# base_length 代表要用几个样本来 预测下一个样本
-	def __init__(self,layers,eta=0.1,epochs=4000,epsr=0.0001,base_length=3):
+	def __init__(self,layers,eta=0.01,epochs=1,epsr=0.0001,base_length=3):
 		self.layers = layers
 		self.eta = eta
 		self.epochs = epochs
 		self.epsr = epsr
 		self.base_length = base_length
 		self.error_cost = np.zeros((1,epochs))
-		self.weights_input_hidden = np.random.random((layers[0],layers[1]))
-		self.weights_hidden_hidden = np.random.random((layers[1],layers[1]))
-		self.weights_hidden_output = np.random.random((layers[1],layers[2]))
+		self.weights_input_hidden = (2*np.random.random((layers[0],layers[1]))-1)*0.1
+		self.weights_hidden_hidden = (2*np.random.random((layers[1],layers[1]))-1)*0.1
+		self.weights_hidden_output = (2*np.random.random((layers[1],layers[2]))-1)*0.1
 		
 	def train(self,X,y):
 		hidden_out = np.zeros((self.layers[0],self.base_length))
@@ -26,20 +29,24 @@ class elman:
 		for num in range(self.epochs):
 			for t in range(self.base_length):
 				if t==0:
-					hidden_out = self.weights_input_hidden.T * X[:,t]
+					hidden_hidden_out[:,t] = (np.atleast_2d(X[:,t]).dot(self.weights_input_hidden))
 				else:
-					hidden_hidden_out[:,t] = np.atleast_2d(X[:,t]).dot(self.weights_input_hidden)  + self.weights_hidden_hidden.dot(hidden_hidden_out[:,t-1])
-					#print(hidden_hidden_out)
-				
+					hidden_hidden_out[:,t] = (np.atleast_2d(X[:,t]).dot(self.weights_input_hidden))  + hidden_hidden_out[:,t-1].dot(self.weights_hidden_hidden)
+				print('before activate:',hidden_hidden_out.shape)
 				for n in range(self.layers[1]):
 					#print(1.0/(1+np.exp(-1*hidden_out[n,0])))
-					hidden_hidden_out[n,t] = 1.0/(1+np.exp(-1*hidden_out[n,t]))
-					
+					hidden_hidden_out[n,t] = sigmoid(hidden_hidden_out[n,t])
+				print('after activate:',hidden_hidden_out.shape)
 				#print(hidden_hidden_out[:,t].shape)
 				#print(self.weights_hidden_output.T * hidden_hidden_out[:,t])
 				#print((np.atleast_2d(hidden_hidden_out[:,t])).shape)
+				print(self.weights_hidden_output.T)
+				print(np.atleast_2d(hidden_hidden_out[:,t]).T)
 				output[:,t] = self.weights_hidden_output.T.dot(np.atleast_2d(hidden_hidden_out[:,t]).T)[0]
+				print('output[t]',output[:,t])
+				#print('y[t]',y[:,t])
 				error = output[:,t]-y[:,t];
+				#print('error:',error)
 				self.error_cost[0,num] = sum(error**2)
 				if(self.error_cost[0,num]<self.epsr):
 					break
@@ -56,10 +63,10 @@ class elman:
 		delta_weights_ho = np.zeros((self.layers[1],self.layers[2]))
 		delta_weights_ih = np.zeros((self.layers[0],self.layers[1]))
 		#print(error)
-		for n in range(len(error)):
-			#print((2 * error[n] * hidden_hidden_out[:,t].T).shape)
-			# 2 * [18,1] * [1,4]
-			delta_weights_ho[:,n] = 2 * hidden_hidden_out[:,t] * np.atleast_2d(error[n])
+		#print(hidden_hidden_out.shape)
+		#print('error',error)
+		delta_weights_ho = 2 * np.atleast_2d(hidden_hidden_out[:,t]).T * np.atleast_2d(error)
+		#print(delta_weights_ho)
 		hidden_output_temp = hidden_output_temp - self.eta * delta_weights_ho
 		delta_weights_ih = 2 * np.atleast_2d(X[:,t]).T.dot(np.atleast_2d(error)).dot(hidden_output_temp.T)
 		hidden_input_temp = hidden_input_temp - self.eta * delta_weights_ih	
@@ -73,6 +80,10 @@ class elman:
 		self.weights_hidden_hidden = hidden_hidden_temp
 		
 	def predict(self,X,y):
+		m,n = X.shape
+		#print(self.weights_input_hidden)
+		output = sigmoid(X.T.dot(self.weights_input_hidden)).dot(self.weights_hidden_output)
+		print(output)
 		
 		
 def loadTrainDataSet(fileName='train.txt'):

@@ -2,7 +2,7 @@ import numpy as np
 import struct
 
 path = 'C:/Users/Administrator/Desktop/python/algorithm/dataset/'
-def loadImageSet(which=0):
+def loadImageSet(which=0,axis=1):
     binfile=None
     if which==0:
         binfile = open(path+"train-images.idx3-ubyte", 'rb')
@@ -23,7 +23,10 @@ def loadImageSet(which=0):
     imgs=struct.unpack_from(bitsString,buffers,offset)
 
     binfile.close()
-    imgs=np.reshape(imgs,[imgNum,width*height])
+    if axis==1:
+        imgs=np.reshape(imgs,[imgNum,width*height])
+    else:
+        imgs=np.reshape(imgs,[imgNum,width,height])
     return imgs
 
 def loadLabelSet(which=0):

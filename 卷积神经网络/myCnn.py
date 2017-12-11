@@ -11,6 +11,7 @@ import copy
 import scipy.signal as signal
 
 
+
 # createst uniform random array w/ values in [a,b) and shape args
 # return value type is ndarray
 def rand_arr(a, b, *args): 
@@ -79,8 +80,8 @@ class Ccnn:
 	def pooling(self, data, pooling_a):		
 		data_r, data_c = shape(data)
 		p_r, p_c = shape(pooling_a)
-		r0 = data_r/p_r
-		c0 = data_c/p_c
+		r0 = int(data_r/p_r)
+		c0 = int(data_c/p_c)
 		state = zeros((r0,c0))
 		for i in range(c0):
 			for j in range(r0):
@@ -194,11 +195,11 @@ class Ccnn:
 			delta_kernel_c1_temp = zeros(shape(self.kernel_c))
 			for n in range(self.cLyNum):
 				temp = delta_layer_c[:,:,n]
-				r1 = map(list,zip(*temp[::1]))#逆时针旋转90度			
-				r2 = map(list,zip(*r1[::1]))#再逆时针旋转90度
+				r1 = list(map(list,zip(*temp[::1])))#逆时针旋转90度			
+				r2 = list(map(list,zip(*r1[::1])))#再逆时针旋转90度
 				temp = signal.convolve2d(train_data, r2,'valid')
-				temp1 = map(list,zip(*temp[::1]))
-				delta_kernel_c1_temp[:,:,n] = map(list,zip(*temp1[::1]))
+				temp1 = list(map(list,zip(*temp[::1])))
+				delta_kernel_c1_temp[:,:,n] = list(map(list,zip(*temp1[::1])))
 			self.kernel_c = self.kernel_c - self.yita * delta_kernel_c1_temp							  					
 			self.weight_f = weight_f1_temp
 			self.kernel_f = kernel_f_temp

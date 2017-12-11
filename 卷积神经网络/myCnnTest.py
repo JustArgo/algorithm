@@ -6,6 +6,9 @@ import numpy as np
 from myCnn import Ccnn
 import math
 import gParam
+import sys
+sys.path.append('../')
+import dataset.mnist as mt
 
 # code
 #卷积层的数目
@@ -17,13 +20,18 @@ oLyNum = 10
 train_num = 800
 
 myCnn = Ccnn(cLyNum, pLyNum, fLyNum, oLyNum)
-ylabel = myCnn.read_label(gParam.LAB_PATH)
+ylabel = mt.loadLabelSet(1)
+#print(len(ylabel))
+#exit()
 
 #循环处理800条数据
 for iter0 in range(gParam.MAX_ITER_NUM):
 	for i in range(train_num):
 		#读取图片数据
-		data = myCnn.read_pic_data(gParam.TOP_PATH, i)	
+		#data = myCnn.read_pic_data(gParam.TOP_PATH, i)	
+		data = mt.loadImageSet(1,2)[i];
+		#print(data.shape)
+		#exit()
 		#print shape(data)
 		ylab = int(ylabel[i])
 		#取得 图片的行数和列数 28行*28列
@@ -33,9 +41,9 @@ for iter0 in range(gParam.MAX_ITER_NUM):
 		#卷积之后的列数
 		n_c = d_n - gParam.C_SIZE + 1
 		#池化之后的行数
-		m_p = m_c/myCnn.pSize
+		m_p = int(m_c/myCnn.pSize)
 		#池化之后的列数
-		n_p = n_c/myCnn.pSize
+		n_p = int(n_c/myCnn.pSize)
 		state_c = zeros((m_c, n_c,myCnn.cLyNum))
 		state_p = zeros((m_p, n_p, myCnn.pLyNum))
 		for n in range(myCnn.cLyNum):
