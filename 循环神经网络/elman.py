@@ -1,4 +1,4 @@
-'''
+﻿'''
 循环神经网络:ELMAN
 
 '''
@@ -73,7 +73,7 @@ class elman:
 		self.weights_hidden_hidden = hidden_hidden_temp
 		
 	def predict(self,X,y):
-		print("predict")
+		
 		
 def loadTrainDataSet(fileName='train.txt'):
 	dataMat = []
@@ -104,5 +104,5 @@ def main():
 	dataMat,y = dealData(dataMat)
 	elmanNet = elman([12,18,4])
 	elmanNet.train(dataMat,y)
-	
+	elmanNet.predict(dataMat,y)
 main()
