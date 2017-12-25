@@ -12,12 +12,12 @@ import dataset.mnist as mt
 
 # code
 #卷积层的数目
-cLyNum = 20
+cLyNum = 10
 #池化层的数目
-pLyNum = 20
-fLyNum = 100
+pLyNum = 10
+fLyNum = 50
 oLyNum = 10
-train_num = 800
+train_num = 50
 
 myCnn = Ccnn(cLyNum, pLyNum, fLyNum, oLyNum)
 ylabel = mt.loadLabelSet(1)
@@ -27,6 +27,8 @@ ylabel = mt.loadLabelSet(1)
 #循环处理800条数据
 for iter0 in range(gParam.MAX_ITER_NUM):
 	for i in range(train_num):
+		print('iter:',iter0)
+		print('----- num:',i)
 		#读取图片数据
 		#data = myCnn.read_pic_data(gParam.TOP_PATH, i)	
 		data = mt.loadImageSet(1,2)[i];
@@ -82,11 +84,12 @@ for iter0 in range(gParam.MAX_ITER_NUM):
 		
 # predict
 test_num = []
-for i in range(100):
+for i in range(10):
 	test_num.append(train_num+i+1)
 
 for i in test_num:
-	data = myCnn.read_pic_data(gParam.TOP_PATH, i)	
+	#data = myCnn.read_pic_data(gParam.TOP_PATH, i)	
+	data = mt.loadImageSet(1,2)[i];
 	#print shape(data)
 	ylab = int(ylabel[i])
 	d_m, d_n = shape(data)
