@@ -1,0 +1,19 @@
+
+	
+
+		
+	1 重点1 build_vocab(sentences, trim_rule=trim_rule)
+	
+			scan_vocab
+					
+					
+					
+			scale_vocab
+			finalize_vocab
+			
+			
+			
+			
+	2 重点2 train()
+	
+		
