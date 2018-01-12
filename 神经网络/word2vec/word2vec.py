@@ -11,6 +11,7 @@ model = word2vec.Word2Vec(sentences, size=200)  #训练skip-gram模型，默认w
  
 print(model)
 # 计算两个词的相似度/相关程度
+
 try:
     y1 = model.similarity(u"国家", u"国务院")
 except KeyError:
