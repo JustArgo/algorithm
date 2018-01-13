@@ -11,7 +11,30 @@
 			scale_vocab
 			finalize_vocab
 			
-			
+			update_weight
+				
+				关键的地方
+					
+					定义两个线程 1个worker_loop,1个job_producer()
+					
+						worker_loop()
+							
+							拿出job
+							进行do_train_job
+								
+								self.sg
+									train_sg_pair
+								self.cbow
+									train_cbow_pair
+									
+								
+								
+								
+						job_producer()
+						
+							
+				
+				
 			
 			
 	2 重点2 train()
