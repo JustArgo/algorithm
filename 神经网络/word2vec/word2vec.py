@@ -7,8 +7,8 @@ logging.basicConfig(format='%(asctime)s:%(levelname)s: %(message)s', level=loggi
 sentences = word2vec.Text8Corpus(u"fenci_result.txt")  # 加载语料
 print(type(sentences))
 print(sentences)
-model = word2vec.Word2Vec(sentences, size=200)  #训练skip-gram模型，默认window=5
- 
+model = word2vec.Word2Vec(sentences, size=200, hs=1, sg=1)  #训练skip-gram模型，默认window=5
+
 print(model)
 # 计算两个词的相似度/相关程度
 
