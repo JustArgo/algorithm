@@ -1,0 +1,23 @@
+		1 学会了用jieba分词
+		2 学会了用jieba加载词典
+		3 调整词典		jieba.add_word
+						jieba.del_word
+					
+		4 调整词频
+			jieba.suggest_freq(('中','将'),True)
+			jieba.suggest_freq('台中',True)
+
+		5 关键词抽取 的 意义
+
+			
+				
+				
+		6 查询词性标记
+			
+			import jieba.posseg as pseg
+			words = pseg.cut("我爱北京天安门")
+			for word,flag in words:
+				print("%s %s" % (word,flag))
+			
+			
+		7 jieba.tokenize 返回起始位置

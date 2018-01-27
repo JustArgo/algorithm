@@ -1,0 +1,43 @@
+
+	
+	
+	
+	
+	
+	
+	
+	data_dim 代表一个词有多少维度, 200
+	
+	hidden_dim 隐单元维度，假设800
+	
+	self.whi,self.wxi,self.bi = self._init_wh_wx() 得到 [800行，800列] [800行，200列] [800行,1列]
+	
+	self.wy,self.by = [200,800] [200,1]
+	
+	iss = np.array([np.zeros((self.hidden_dim,1))] * (T+1))
+	fss = np.array([np.zeros((self.hidden_dim,1))] * (T+1))
+	oss = 
+	ass = 
+	
+	hss = 
+	css = 
+	
+	ys = np.array([self.data_dim,1] * T)
+	
+	lstm = myLSTM(800,200)
+	lstm.train(X_train[:200],y_train[:200],learning_rate=0.005,n_epoch=3)
+		
+		losses = [] 损失
+		num_examples = 0
+		
+		for epoch in 3:
+			for i in xrange(len(y_train)):
+				self.sgd_step(X_train[i],y_train[i],learning_rate)
+				num_examples+=1
+			
+			loss = self.loss(X_train,y_train)
+			losses.append(loss)
+			if len() > 1 and losses[-1] > losses[-2]:
+				
+			
+		
