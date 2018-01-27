@@ -39,5 +39,16 @@
 			losses.append(loss)
 			if len() > 1 and losses[-1] > losses[-2]:
 				
+				
+				LSTM的关键在于input_gate和output_gate 和 forget_gate的设计
+				
+				
+				
+				
+				
+				
+				
+				
 			
+					
 		

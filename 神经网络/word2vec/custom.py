@@ -1,39 +1,66 @@
 '''
-	×Ô¶¨Òå word2vec
+	è‡ªå®šä¹‰ word2vec
+	word2vecåœ¨ 
 '''
 from scipy.special import expit
-from numpy import *
 from copy import deepcopy
 import heapq
+from numpy import exp, log, dot, zeros, outer, random, dtype, float32 as REAL,\
+    uint32, seterr, array, uint8, vstack, fromstring, sqrt,\
+    empty, sum as np_sum, ones, logaddexp
+	
+from six import iteritems, itervalues, string_types
 
+#å‘é‡å¤§å°
+vector_size = 20
 
-class Vocab:
-	def __init__(self,count=0,index=0,left,right):
+#ç¬¬ä¸€å±‚å¤§å°
+layer1_size = 20
+
+#çª—å£å¤§å°
+window = 5
+	
+class Vocab():
+	def __init__(self,count=0,index=0,left=None,right=None):
 		self.point = []
 		self.code = []
 		self.count = count
 		self.index = index
 		self.left = left
 		self.right = right
+		
+	def __lt__(self, other):  # used for sorting in a priority queue
+		return self.count < other.count
+
 	
-fopen = open('fenci_result.txt')
+def seeded_vector(seed_string):
+	once = random.RandomState(hash(seed_string) & 0xffffffff)
+	return (once.rand(vector_size) - 0.5) / vector_size
+	
+	
+
+fopen = open('fenci_result.txt',encoding='UTF-8')
 countDict = {}
 alpha = 0.001
 wv_vocab = {}
+word_vocabs = []
+wv_index2word = []
 for word in fopen:
 	if word not in countDict:
 		countDict[word] = 1
 	else:	
 		countDict[word] += 1
 	
-i=0	
+count=0	
 for word in countDict:
-	wv_vocab[word] = Vocab(count=countDict[word],index=i)
-	i += 1
-
+	wv_vocab[word] = Vocab(count=countDict[word],index=count)
+	word_vocabs.append(wv_vocab[word])
+	wv_index2word.append(word)
+	count += 1
+print(countDict)
 heap = list(itervalues(wv_vocab))
 heapq.heapify(heap)
-for i in xrange(len(wv_vocab) - 1):
+for i in range(len(wv_vocab) - 1):
 	min1, min2 = heapq.heappop(heap), heapq.heappop(heap)
 	heapq.heappush(
 		heap, Vocab(count=min1.count + min2.count, index=i + len(wv_vocab), left=min1, right=min2)
@@ -54,38 +81,51 @@ if heap:
 			stack.append((node.left, array(list(codes) + [0], dtype=uint8), points))
 			stack.append((node.right, array(list(codes) + [1], dtype=uint8), points))
 
-	
-for pos1,word1 in enumerate(countDict):
-	for pos2,word2 in enumerate(countDict[]):
-		if pos1!=pos2:
-			train_sg_pair(word1,pos2)
-		
-#ÏÈµÃµ½ syn1[word.point]
+#å…ˆå¾—åˆ° syn1[word.point]
+syn1 = zeros((len(wv_vocab), layer1_size), dtype=REAL)
 
 
+context_vectors = empty((count,vector_size),dtype=REAL)
+for i in range(len(wv_vocab)):
+	context_vectors[i] = seeded_vector(wv_index2word[i] + str(1))			
+			
 def train_sg_pair(word1,context_index):
 
-	#´ú±íµ¥´Ê2µÄÉÏÏÂÎÄ
+	#ä»£è¡¨å•è¯2çš„ä¸Šä¸‹æ–‡
 	l1 = context_vectors[context_index]
 
 	neu1e = zeros(l1.shape)
 
-	predict_word = wv[word1]
+	predict_word = wv_vocab[word1]
 	
 	'''
-	predict_word¾ÍÊÇµ¥´Ê1µÄVocab¶ÔÏó
-	syn1[predict_word].point ´ú±íµ±Ç°¼ÆËãµÃµ½µÄ µ¥´Ê1µÄ ÏòÁ¿
+	predict_wordå°±æ˜¯å•è¯1çš„Vocabå¯¹è±¡
+	syn1[predict_word].point ä»£è¡¨å½“å‰è®¡ç®—å¾—åˆ°çš„ å•è¯1çš„ å‘é‡
 	'''
 
 	l2a = deepcopy(syn1[predict_word.point])
 
-	prod_term = dot(l1,l2a)
+	prod_term = dot(l1,l2a.T)
 
 	fa = expit(prod_term)
 
-	#¼ÆËãÌİ¶ÈÎó²î
+	#è®¡ç®—æ¢¯åº¦è¯¯å·®
 	ga = (1-predict_word.code-fa)*alpha
 
-	#¸üĞÂmodel.syn1[predict_word]
+	#æ›´æ–°model.syn1[predict_word]
 	syn1[predict_word.point] += outer(ga, l1)
+			
+			
+for pos1,word1 in enumerate(word_vocabs):
+	reduced_window = random.randint(window)
+	start = max(0, pos1 - window + reduced_window)
+	for pos2,word2 in enumerate(word_vocabs[start:(pos1+window+1-reduced_window)],start):
+		if pos1!=pos2:
+			train_sg_pair(wv_index2word[word1.index],pos2)
+			
+print(len(syn1))
+		
+
+
+
 

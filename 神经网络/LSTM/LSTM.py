@@ -1,4 +1,4 @@
-import tokenFile
+#import tokenFile
 import numpy as np
 
 # 输出单元激活函数
@@ -97,10 +97,10 @@ class myLSTM:
     # 计算损失， softmax交叉熵损失函数， (x,y)为多个样本
     def loss(self, x, y):
         cost = 0        
-        for i in xrange(len(y)):
+        for i in range(len(y)):
             stats = self.forward(x[i])
             # 取出 y[i] 中每一时刻对应的预测值
-            pre_yi = stats['ys'][xrange(len(y[i])), y[i]]
+            pre_yi = stats['ys'][range(len(y[i])), y[i]]
             cost -= np.sum(np.log(pre_yi))
 
         # 统计所有y中词的个数, 计算平均损失
@@ -132,7 +132,7 @@ class myLSTM:
         stats = self.forward(x)
         # 目标函数对输出 y 的偏导数
         delta_o = stats['ys']
-        delta_o[np.arange(len(y)), y] -= 1
+        delta_o[np.arange(len(y)), y] -= 1  #为什么要减1
 
         for t in np.arange(len(y))[::-1]:
             # 输出层wy, by的偏导数，由于所有时刻的输出共享输出权值矩阵，故所有时刻累加
@@ -203,27 +203,32 @@ class myLSTM:
         losses = []
         num_examples = 0
 
-        for epoch in xrange(n_epoch):   
-            for i in xrange(len(y_train)):
+        for epoch in range(n_epoch):   
+            for i in range(len(y_train)):
                 self.sgd_step(X_train[i], y_train[i], learning_rate)
                 num_examples += 1
 
             loss = self.loss(X_train, y_train)
             losses.append(loss)
-            print 'epoch {0}: loss = {1}'.format(epoch+1, loss)
+            print('epoch {0}: loss = {1}'.format(epoch+1, loss))
             if len(losses) > 1 and losses[-1] > losses[-2]:
                 learning_rate *= 0.5
-                print 'decrease learning_rate to', learning_rate
+                print('decrease learning_rate to', learning_rate)
 				
 def main():
 	# 获取数据
-    file_path = r'/home/display/pypys/practices/rnn/results-20170508-103637.csv'
-    dict_size = 8000
-    myTokenFile = tokenFile.tokenFile2vector(file_path, dict_size)
-    X_train, y_train, dict_words, index_of_words = myTokenFile.get_vector()  
-
-    # 训练LSTM
-    lstm = myLSTM(dict_size, hidden_dim=100)
-    lstm.train(X_train[:200], y_train[:200], 
-              learning_rate=0.005, 
-              n_epoch=3)
+	'''
+	file_path = r'/home/display/pypys/practices/rnn/results-20170508-103637.csv'
+	dict_size = 8000
+	myTokenFile = tokenFile.tokenFile2vector(file_path, dict_size)
+	X_train, y_train, dict_words, index_of_words = myTokenFile.get_vector()  
+	'''
+	dict_size = 2
+	X_train = [[1,0]]
+	y_train = [[0,1]]
+	# 训练LSTM
+	lstm = myLSTM(dict_size, hidden_dim=8)
+	lstm.train(X_train[:1], y_train[:1], learning_rate=0.005, n_epoch=3)
+	lstm.predict([4,2])
+	
+main()
